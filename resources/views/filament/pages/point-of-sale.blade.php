@@ -4,17 +4,21 @@
           <div style="min-height: calc(100vh - 200px);" class="md:w-[70%]">
             <!-- Categories List -->
             <ul class="flex items-center gap-4 overflow-x-auto bg-neutral-200 border ring-gray-100 text-lg py-1 px-2 rounded-lg">
+                @foreach($categories as $category)
               <li class="">
-                <button class="font-bold py-2 px-4 bg-neutral-100 rounded-xl">Starters</button>
+                <button wire:key="{{$category->id}}" class="font-semibold border border-neutral-200 py-2 px-4 bg-neutral-100 rounded-xl">{{$category->name}}</button>
               </li>
+              @endforeach
             </ul>
             <!-- Products Grid -->
             <div style="max-height: calc(100vh - 150px);" class="overflow-y-auto mt-4 grid gap-4 grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              <article class="md:w-48 border bg-white p-4 rounded-lg ring-gray-100 cursor-pointer">
-                <img src="./img.png" alt="" class="rounded-full h-40 w-40 aspect-square mx-auto">
-                <h2 class="mt-2 text-xl text-center">Product Name</h2>
-                <p class="text-center font-bold text-xl">$55</p>
-              </article>
+                @foreach($products as $product)
+                    <article wire:key="{{$product->id}}" wire:click="addToCart({{$product->id}})" data-filter="{{strtolower($product->category->name) }}" class="md:w-48 border bg-white p-4 rounded-lg ring-gray-100 cursor-pointer">
+                        <img src="{{asset('storage/' . $product->image)}}" alt="{{$product->name . ' image'}}" alt="" class="rounded-full h-40 w-40 aspect-square mx-auto object-cover ">
+                        <h2 class="mt-2 text-xl text-center">{{$product->name}}</h2>
+                        <p class="text-center font-bold text-xl">{{$settings->currency . $product->price}}</p>
+                    </article>
+                @endforeach
             </div>
           </div>
           <!-- cart -->
@@ -63,18 +67,18 @@
                               <col width="20%">
                             </colgroup>
                             <tbody class="divide-y divide-gray-200">
-                              <tr>
-                                <td class="pl-3 py-4 whitespace-wrap text-sm font-medium text-gray-800 ">Johndfsdf dfsdf dsfsfsdf fdfs Brown</td>
+                              @foreach($products_in_cart as $product)
+                              <tr wire:key="{{$product['id']}}">
+                                <td class="pl-3 py-4 whitespace-wrap text-sm font-medium text-gray-800 ">{{$product['name']}}</td>
                                 <td class="py-4 whitespace-nowrap text-sm text-gray-800 ">
-                                    <input class="w-full border py-1 outline-none px-2" type="number" name="" id="">
+                                    <input class="w-full border py-1 outline-none px-2" value="{{$product['quantity']}}" type="number" name="" id="">
                                 </td>
-                                <td class="pl-3 py-4 whitespace-nowrap text-sm text-gray-800">45</td>
+                                <td class="pl-3 py-4 whitespace-nowrap text-sm text-gray-800">{{$settings->currency . $product['price']}}</td>
                                 <td class="pr-3 py-4 whitespace-nowrap text-end text-sm font-medium">
-                                  <button type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 ">Delete</button>
+                                  <button wire:click="removeFromCart({{$product['id']}})" type="button" class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 ">Delete</button>
                                 </td>
                               </tr>
-      
-        
+                              @endforeach
                             </tbody>
                           </table>
                         </div>
@@ -84,25 +88,27 @@
                 </div>       
                </div>
             </div> 
-            <div class="absolute bottom-0 mt-4 w-full bg-neutral-200">
+            <div class="absolute bottom-0 mt-4 w-full border-t">
               <div class="p-3">
                 <div class="my-4 flex items-center justify-between">
                   <p class="text-lg ">Subtotal</p>
-                  <p class="text-lg font-semibold">$55</p>
+                  <p class="text-lg font-semibold">{{$settings->currency . $subtotal}}</p>
                 </div>
                 <div class="my-4 flex items-center justify-between">
                   <p class="text-lg ">Discount (%)</p>
                   <p class="text-lg font-semibold">
-                    <input class="outline-none border w-[80px] px-2 text-lg" type="number" name="" id="">
+                    <input class="outline-none border w-[80px] px-2 text-lg" type="number" min="0" name="discount" id="discount"  wire:model="discount"  >
                   </p>
                 </div>
+                @if($settings->charge_tax === 1)
                 <div class="my-4 flex items-center justify-between">
-                  <p class="text-lg ">VAT</p>
-                  <p class="text-lg font-semibold">3%</p>
+                  <p class="text-lg ">VAT({{$settings->tax_percentage}}%)</p>
+                  <p class="text-lg font-semibold">{{$settings->currency . $vat_amount}}</p>
                 </div>
+                @endif
                 <div class="my-4 flex items-center justify-between">
                   <p class="text-lg ">Grand Total</p>
-                  <p class="text-3xl font-semibold">$55</p>
+                  <p class="text-3xl font-semibold">{{$settings->currency . $grand_total}}</p>
                 </div>
                 <div class="flex items-center justify-center gap-8">
                   <button class="bg-green-500 rounded-md text-lg py-2 w-[50%] text-white font-semibold">Hold Order</button>
